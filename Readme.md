@@ -1,0 +1,35 @@
+# Todo API
+
+A simple RESTful API for managing todo tasks, built with Go.
+
+## Features
+
+- Create, read, update, and delete todo tasks
+- In-memory storage for easy setup and testing
+- Modular code structure for easy extension
+
+## Project Structure
+
+- `main.go` – Application entry point and server setup
+- `api/` – HTTP handlers and middleware
+- `models/` – Data models (e.g., Task)
+- `storage/` – Storage abstraction and in-memory implementation
+
+## Getting Started
+
+1. **Install dependencies:**
+   ```sh
+   go mod tidy
+   ```
+
+2. **Run the server:**
+   ```sh
+   go run main.go
+   ```
+
+3. **API Endpoints:**
+   - `GET /tasks` – List all tasks
+   - `POST /tasks` – Create a new task
+   - `GET /tasks/{id}` – Get a task by ID
+   - `PUT /tasks/{id}` – Update a task
+   - `DELETE /tasks/{id}` – Delete a task
