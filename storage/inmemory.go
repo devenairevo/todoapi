@@ -2,9 +2,9 @@ package storage
 
 import (
 	"context"
+	"github.com/devenairevo/todoapi/models"
 	"github.com/google/uuid"
 	"sync"
-	"tasks/models"
 )
 
 type InMemoryStorage struct {
@@ -18,7 +18,7 @@ func NewInMemoryStorage() *InMemoryStorage {
 	}
 }
 
-func (s *InMemoryStorage) CreateTask(ctx context.Context, task models.Task) (models.Task, error) {
+func (s *InMemoryStorage) Create(ctx context.Context, task models.Task) (models.Task, error) {
 	select {
 	case <-ctx.Done():
 		return models.Task{}, ctx.Err()
@@ -38,7 +38,7 @@ func (s *InMemoryStorage) CreateTask(ctx context.Context, task models.Task) (mod
 	return task, nil
 }
 
-func (s *InMemoryStorage) GetTaskByID(ctx context.Context, id string) (models.Task, error) {
+func (s *InMemoryStorage) GetByID(ctx context.Context, id string) (models.Task, error) {
 	select {
 	case <-ctx.Done():
 		return models.Task{}, ctx.Err()
@@ -55,7 +55,7 @@ func (s *InMemoryStorage) GetTaskByID(ctx context.Context, id string) (models.Ta
 	return task, nil
 }
 
-func (s *InMemoryStorage) GetAllTasks(ctx context.Context) ([]models.Task, error) {
+func (s *InMemoryStorage) GetAll(ctx context.Context) ([]models.Task, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -72,7 +72,7 @@ func (s *InMemoryStorage) GetAllTasks(ctx context.Context) ([]models.Task, error
 	return tasksList, nil
 }
 
-func (s *InMemoryStorage) UpdateTask(ctx context.Context, task models.Task) (models.Task, error) {
+func (s *InMemoryStorage) Update(ctx context.Context, task models.Task) (models.Task, error) {
 	select {
 	case <-ctx.Done():
 		return models.Task{}, ctx.Err()
@@ -97,7 +97,7 @@ func (s *InMemoryStorage) UpdateTask(ctx context.Context, task models.Task) (mod
 	return existingTask, nil
 }
 
-func (s *InMemoryStorage) DeleteTask(ctx context.Context, id string) error {
+func (s *InMemoryStorage) Delete(ctx context.Context, id string) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()

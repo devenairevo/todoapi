@@ -3,55 +3,35 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/devenairevo/todoapi/handlers"
+	"github.com/devenairevo/todoapi/middleware"
+	"github.com/devenairevo/todoapi/storage"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"tasks/api"
-	"tasks/storage"
 	"time"
 )
 
 func main() {
-	taskStorage := storage.NewInMemoryStorage()
-
-	apiConfig := api.NewAPIConfig(taskStorage)
-
-	mux := http.NewServeMux()
-
-	publicGetTasksHandler := api.LoggingMiddleware(http.HandlerFunc(apiConfig.GetTasksHandler))
-	authenticatedCreateTaskHandler := api.LoggingMiddleware(api.AuthMiddleware(http.HandlerFunc(apiConfig.CreateTaskHandler)))
-
-	mux.Handle("/tasks", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			publicGetTasksHandler.ServeHTTP(w, r)
-		case http.MethodPost:
-			authenticatedCreateTaskHandler.ServeHTTP(w, r)
-		default:
-			api.HandleError(w, errors.New("Method Not Allowed"))
-		}
-	}))
-
-	publicHandleTaskByIDGet := api.LoggingMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		apiConfig.HandleTaskByID(w, r)
-	}))
-
-	authenticatedHandleTaskByID := api.LoggingMiddleware(api.AuthMiddleware(http.HandlerFunc(apiConfig.HandleTaskByID)))
-
-	mux.Handle("/tasks/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			publicHandleTaskByIDGet.ServeHTTP(w, r)
-		} else {
-			authenticatedHandleTaskByID.ServeHTTP(w, r)
-		}
-	}))
+	inMemoryStorage := storage.NewInMemoryStorage()
+	taskStorageHandler := handlers.NewTaskStorage(inMemoryStorage)
+	router := http.NewServeMux()
 
 	server := &http.Server{
-		Addr:    ":8080",
-		Handler: mux,
+		Addr: ":8080",
+		Handler: middleware.LoggingMiddleware(
+			middleware.AuthMiddleware(router),
+		),
 	}
+
+	// Requests
+	router.HandleFunc("POST /tasks", taskStorageHandler.CreateTask)
+	router.HandleFunc("GET /tasks", taskStorageHandler.GetTasks)
+	router.HandleFunc("GET /tasks/{id}", taskStorageHandler.GetTaskByID)
+	router.HandleFunc("PUT /tasks/{id}", taskStorageHandler.GetTaskByID)
+	router.HandleFunc("DELETE /tasks/{id}", taskStorageHandler.GetTaskByID)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)

@@ -1,4 +1,4 @@
-module tasks
+module github.com/devenairevo/todoapi
 
 go 1.24.3
 

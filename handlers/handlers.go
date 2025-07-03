@@ -1,19 +1,14 @@
-package api
+package handlers
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/devenairevo/todoapi/models"
+	"github.com/devenairevo/todoapi/storage"
 	"log"
 	"net/http"
-	"strings"
-	"tasks/models"
-	"tasks/storage"
 )
-
-type Config struct {
-	Storage storage.TaskStorage
-}
 
 func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
@@ -41,11 +36,15 @@ func HandleError(w http.ResponseWriter, err error) {
 	writeJSONResponse(w, statusCode, map[string]string{"error": err.Error()})
 }
 
-func NewAPIConfig(s storage.TaskStorage) *Config {
-	return &Config{Storage: s}
+type TaskStorage struct {
+	storage.Task
 }
 
-func (cfg *Config) CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
+func NewTaskStorage(s storage.Task) *TaskStorage {
+	return &TaskStorage{Task: s}
+}
+
+func (ts *TaskStorage) CreateTask(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		HandleError(w, errors.New("method Not Allowed"))
 		return
@@ -57,7 +56,7 @@ func (cfg *Config) CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdTask, err := cfg.Storage.CreateTask(r.Context(), newTask)
+	createdTask, err := ts.Create(r.Context(), newTask)
 	if err != nil {
 		HandleError(w, err)
 		return
@@ -67,13 +66,13 @@ func (cfg *Config) CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Created task: %+v\n", createdTask)
 }
 
-func (cfg *Config) GetTasksHandler(w http.ResponseWriter, r *http.Request) {
+func (ts *TaskStorage) GetTasks(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		HandleError(w, errors.New("method Not Allowed"))
 		return
 	}
 
-	tasksList, err := cfg.Storage.GetAllTasks(r.Context())
+	tasksList, err := ts.GetAll(r.Context())
 	if err != nil {
 		HandleError(w, err)
 		return
@@ -82,8 +81,8 @@ func (cfg *Config) GetTasksHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, tasksList)
 }
 
-func (cfg *Config) HandleTaskByID(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/tasks/")
+func (ts *TaskStorage) GetTaskByID(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
 	if id == "" {
 		HandleError(w, errors.Join(storage.ErrInvalidInput, errors.New("task ID is required")))
 		return
@@ -91,7 +90,7 @@ func (cfg *Config) HandleTaskByID(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		task, err := cfg.Storage.GetTaskByID(r.Context(), id) // Передаем контекст
+		task, err := ts.GetByID(r.Context(), id) // Передаем контекст
 		if err != nil {
 			HandleError(w, err)
 			return
@@ -106,7 +105,7 @@ func (cfg *Config) HandleTaskByID(w http.ResponseWriter, r *http.Request) {
 		}
 		updatedTaskData.ID = id
 
-		updatedTask, err := cfg.Storage.UpdateTask(r.Context(), updatedTaskData)
+		updatedTask, err := ts.Update(r.Context(), updatedTaskData)
 		if err != nil {
 			HandleError(w, err)
 			return
@@ -115,12 +114,12 @@ func (cfg *Config) HandleTaskByID(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Updated task %s: %+v\n", id, updatedTask)
 
 	case http.MethodDelete:
-		err := cfg.Storage.DeleteTask(r.Context(), id)
+		err := ts.Delete(r.Context(), id)
 		if err != nil {
 			HandleError(w, err)
 			return
 		}
-		w.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusOK)
 		log.Printf("Deleted task: %s\n", id)
 
 	default:

@@ -1,7 +1,8 @@
-package api
+package middleware
 
 import (
 	"encoding/json"
+	"github.com/devenairevo/todoapi/handlers"
 	"log"
 	"net/http"
 	"time"
@@ -28,12 +29,12 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		providedKey := r.Header.Get("X-API-Key")
-		if providedKey == "" || providedKey != apiKey {
+		if providedKey != apiKey {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			err := json.NewEncoder(w).Encode(map[string]string{"error": "Unauthorized: Missing or invalid API Key"})
 			if err != nil {
-				HandleError(w, err)
+				handlers.HandleError(w, err)
 			}
 			return
 		}
