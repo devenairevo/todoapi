@@ -1,14 +1,5 @@
-### Get ALL tasks
-GET http://localhost:8080/tasks
-Content-Type: application/json
-
-### Get task by Task ID
-GET http://localhost:8080/tasks/7086a896-61da-4ccb-91ee-c8add20b89e5
-Content-Type: application/json
-#X-API-Key: super-secret-api-key
-
 ### Create task
-POST http://localhost:8080/tasks
+POST http://localhost:8080/v1/tasks
 Content-Type: application/json
 X-API-Key: super-secret-api-key
 
@@ -16,8 +7,21 @@ X-API-Key: super-secret-api-key
   "title": "Learn go faster 2"
 }
 
+> {%
+    client.global.set("taskId", response.body.id);
+%}
+
+### Get ALL tasks
+GET http://localhost:8080/v1/tasks
+Content-Type: application/json
+
+### Get task by Task ID
+GET http://localhost:8080/v1/tasks/{{taskId}}
+Content-Type: application/json
+
+
 ### Update task
-PUT http://localhost:8080/tasks/dc9282fe-434f-4bf1-9db7-543e98300de8
+PUT http://localhost:8080/v1/tasks/{{taskId}}
 Content-Type: application/json
 X-API-Key: super-secret-api-key
 
@@ -26,7 +30,7 @@ X-API-Key: super-secret-api-key
   "completed": true
 }
 ### Delete task
-DELETE http://localhost:8080/tasks/dc9282fe-434f-4bf1-9db7-543e98300de8
+DELETE http://localhost:8080/v1/tasks/{{taskId}}
 Content-Type: application/json
 X-API-Key: super-secret-api-key
 

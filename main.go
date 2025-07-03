@@ -19,10 +19,13 @@ func main() {
 	taskStorageHandler := handlers.NewTaskStorage(inMemoryStorage)
 	router := http.NewServeMux()
 
+	v1 := http.NewServeMux()
+	v1.Handle("/", http.StripPrefix("/v1", router))
+
 	server := &http.Server{
 		Addr: ":8080",
 		Handler: middleware.LoggingMiddleware(
-			middleware.AuthMiddleware(router),
+			middleware.AuthMiddleware(http.StripPrefix("/v1", router)),
 		),
 	}
 

@@ -30,8 +30,8 @@ A simple RESTful API for managing todo tasks, built with Go.
    ```
 
 3. **API Endpoints:**
-   - `GET /tasks` – List all tasks
-   - `POST /tasks` – Create a new task
-   - `GET /tasks/{id}` – Get a task by ID
-   - `PUT /tasks/{id}` – Update a task
-   - `DELETE /tasks/{id}` – Delete a task
+   - `GET /v1/tasks` – List all tasks
+   - `POST /v1/tasks` – Create a new task
+   - `GET /v1/tasks/{id}` – Get a task by ID
+   - `PUT /v1/tasks/{id}` – Update a task
+   - `DELETE /v1/tasks/{id}` – Delete a task
