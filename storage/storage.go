@@ -6,7 +6,7 @@ import (
 	"github.com/devenairevo/todoapi/models"
 )
 
-type Task interface {
+type Tasker interface {
 	Create(ctx context.Context, task models.Task) (models.Task, error)
 	GetByID(ctx context.Context, id string) (models.Task, error)
 	GetAll(ctx context.Context) ([]models.Task, error)

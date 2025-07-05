@@ -37,11 +37,11 @@ func HandleError(w http.ResponseWriter, err error) {
 }
 
 type TaskStorage struct {
-	storage.Task
+	storage.Tasker
 }
 
-func NewTaskStorage(s storage.Task) *TaskStorage {
-	return &TaskStorage{Task: s}
+func NewTaskStorage(s storage.Tasker) *TaskStorage {
+	return &TaskStorage{Tasker: s}
 }
 
 func (ts *TaskStorage) CreateTask(w http.ResponseWriter, r *http.Request) {
