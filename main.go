@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/devenairevo/todoapi/handlers"
 	"github.com/devenairevo/todoapi/middleware"
 	"github.com/devenairevo/todoapi/storage"
@@ -17,6 +18,7 @@ import (
 func main() {
 	inMemoryStorage := storage.NewInMemoryStorage()
 	taskStorageHandler := handlers.NewTaskStorage(inMemoryStorage)
+
 	router := http.NewServeMux()
 
 	v1 := http.NewServeMux()
