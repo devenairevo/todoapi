@@ -7,6 +7,7 @@ import (
 	"github.com/devenairevo/todoapi/handlers"
 	"github.com/devenairevo/todoapi/middleware"
 	"github.com/devenairevo/todoapi/storage"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -16,8 +17,30 @@ import (
 )
 
 func main() {
-	inMemoryStorage := storage.NewInMemoryStorage()
-	taskStorageHandler := handlers.NewTaskStorage(inMemoryStorage)
+	var taskHandler *handlers.TaskStorage
+
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	storageType := os.Getenv("STORAGE")
+
+	// Storage type check
+	switch storageType {
+	case "inpostgres":
+		dbStorage, err := storage.NewInPostgresStorage()
+		if err != nil {
+			fmt.Errorf("connection error %s", err)
+		}
+		defer dbStorage.Pool.Close()
+
+		taskHandler = handlers.NewTaskStorage(dbStorage)
+	case "inmemory":
+		inMemoryStorage := storage.NewInMemoryStorage()
+		taskHandler = handlers.NewTaskStorage(inMemoryStorage)
+	default:
+		log.Fatalf("Unknown storage type: %s", storageType)
+	}
 
 	router := http.NewServeMux()
 
@@ -32,11 +55,11 @@ func main() {
 	}
 
 	// Requests
-	router.HandleFunc("POST /tasks", taskStorageHandler.CreateTask)
-	router.HandleFunc("GET /tasks", taskStorageHandler.GetTasks)
-	router.HandleFunc("GET /tasks/{id}", taskStorageHandler.GetTaskByID)
-	router.HandleFunc("PUT /tasks/{id}", taskStorageHandler.GetTaskByID)
-	router.HandleFunc("DELETE /tasks/{id}", taskStorageHandler.GetTaskByID)
+	router.HandleFunc("POST /tasks", taskHandler.CreateTask)
+	router.HandleFunc("GET /tasks", taskHandler.GetTasks)
+	router.HandleFunc("GET /tasks/{id}", taskHandler.GetTaskByID)
+	router.HandleFunc("PUT /tasks/{id}", taskHandler.GetTaskByID)
+	router.HandleFunc("DELETE /tasks/{id}", taskHandler.GetTaskByID)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
