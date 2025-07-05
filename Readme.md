@@ -5,12 +5,15 @@ A simple RESTful API for managing todo tasks, built with Go.
 ## Features
 
 - Create, read, update, and delete todo tasks
+- Docker compose file for Postgres setup
 - In-memory storage for easy setup and testing
+- Storage variations: preferable data saving (Postgres or In-memory)
 - Modular code structure for easy extension
 
 ## Project Structure
 
 - `main.go` – Application entry point and server setup
+- `db/` – migrations, interface
 - `middleware/` – middlewares
 - `handlers/` – HTTP handlers
 - `models/` – Data models (e.g., Task)
